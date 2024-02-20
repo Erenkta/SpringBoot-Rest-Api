@@ -1,0 +1,119 @@
+package com.springboot.tutorials.books.Controllers;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+import java.util.ArrayList;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springboot.tutorials.books.Data.TestData;
+import com.springboot.tutorials.books.Entity.Book;
+import com.springboot.tutorials.books.Entity.dtos.BookDto;
+import com.springboot.tutorials.books.Services.abstracts.BookService;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ExtendWith(SpringExtension.class)
+@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)// Her test methodundan önce temizlik yapıyor
+public class BookControllerIT { //IT == Integration Test yani birden fazla birimi aynı anda test etmek gibi
+	
+	@Autowired
+	private MockMvc mockMvc; // bize rest api'yi test etmek için imkan veriyor
+	
+	@Autowired
+	private BookService bookService;
+	
+	
+	@Test
+	public void testThatBookIsCreatedReturnsHTTP201() throws Exception {
+		final  BookDto book = TestData.testBookDto();
+		final ObjectMapper objectMapper = new ObjectMapper();
+		final String bookJson = objectMapper.writeValueAsString(book);
+		
+		mockMvc.perform(put("/books/"+book.getIsbn())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(bookJson))	
+				.andExpect(MockMvcResultMatchers.status().isCreated())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.isbn").value(book.getIsbn()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.title").value(book.getTitle()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.author").value(book.getAuthor()));
+	}
+	@Test
+	public void testThatBookIsUpdatedReturnsHTTP200() throws Exception {
+		final  BookDto book = TestData.testBookDto();
+		bookService.create(book); //Db temizlendiği için bunu yazdık ki kaydetsin önce
+		book.setAuthor("Virginia Volf"); // Kelime değiştirip güncelleniyor mu diye denedik
+		
+		final ObjectMapper objectMapper = new ObjectMapper();
+		final String bookJson = objectMapper.writeValueAsString(book);
+		
+		mockMvc.perform(put("/books/"+book.getIsbn())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(bookJson))	
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.isbn").value(book.getIsbn()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.title").value(book.getTitle()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.author").value(book.getAuthor()));
+	}
+	
+	@Test
+	public void testThatGetBookReturns404WhenNotFound() throws Exception {
+		mockMvc.perform(get("/books/00000"))
+		.andExpect(MockMvcResultMatchers.status().isNotFound()); // dönen status 404 mü diye bakıyoruz
+	}
+	
+	@Test
+	public void testThatGetBookReturns200AndBookWhenExists() throws Exception {
+		final BookDto book = TestData.testBookDto(); // test verimizi oluşturdum
+		bookService.create(book); // test verisinden bir entity oluşturdum
+		
+		mockMvc.perform(get("/books/"+book.getIsbn()))
+				.andExpect(MockMvcResultMatchers.status().isFound()) // status ?=200
+				.andExpect(MockMvcResultMatchers.jsonPath("$.isbn").value(book.getIsbn()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.title").value(book.getTitle()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.author").value(book.getAuthor()));
+
+	}
+	@Test
+	public void testThatListBookReturns200AndEmptyListWhenNoBooksExists() throws Exception {
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/books"))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.content().string("[]")); //content'in boş bir arrayListe eşit olup olmadığına baktık
+	}
+	@Test
+	public void testThatListBookReturns200AndListWhenBooksExists() throws Exception  {
+		final BookDto book = TestData.testBookDto(); // test verimizi oluşturdum
+		bookService.create(book); // test verisinden bir entity oluşturdum
+		
+		mockMvc.perform((get("/books")))
+		.andExpect(MockMvcResultMatchers.status().isOk())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.[0].isbn").value(book.getIsbn()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.[0].title").value(book.getTitle()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.[0].author").value(book.getAuthor()));
+	
+	}
+	@Test
+	public void testThatDeleteBookIsReturnsHTTP204WhenBookDoesntExists() throws Exception {
+		mockMvc.perform(delete("/books/000000"));
+		.
+	}
+
+}

@@ -1,0 +1,6 @@
+package com.springboot.tutorials.books.Services.abstracts;
+
+
+public interface BookService {
+
+}

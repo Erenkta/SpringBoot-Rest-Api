@@ -1,0 +1,44 @@
+package com.springboot.tutorials.books.Services.concretes;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.springboot.tutorials.books.Entity.Book;
+import com.springboot.tutorials.books.Entity.dtos.BookDto;
+import com.springboot.tutorials.books.Repositories.BookRepository;
+import com.springboot.tutorials.books.Services.abstracts.BookService;
+
+@Service 
+public class BookManager implements BookService{
+	private final BookRepository bookRepository;
+	
+	@Autowired // bu constructor Injection bunu yapmak yerine yukarıdaki bookRepository'e de autowired yapabilirdim
+	public BookManager(final BookRepository bookRepository) { //buraya context'ten geliyor
+		this.bookRepository = bookRepository;
+	}
+
+	@Override
+	public Book create(final Book book) {
+		final Book entity = bookDtoToEntity(book); // bize verilen book objesini Dto'ya çevirdik
+		final Book savedEntity = bookRepository.save(entity);
+		return null;
+		
+	}
+	
+	private BookDto bookDtoToEntity(Book dto) { //Dto --> Entity
+		return BookDto.builder()
+			.isbn(dto.getIsbn())
+			.author(dto.getAuthor())
+			.title(dto.getTitle())
+			.build();
+	}
+	private Book bookToBookDto(Book entity) { // Entity --> Dto
+		return Book.builder()
+			.isbn(entity.getIsbn())
+			.author(entity.getAuthor())
+			.title(entity.getTitle())
+			.build();
+	}
+
+
+}

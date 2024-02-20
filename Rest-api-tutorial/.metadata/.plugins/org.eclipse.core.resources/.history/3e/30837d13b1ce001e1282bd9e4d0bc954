@@ -1,0 +1,5 @@
+package com.springboot.tutorials.books.Data;
+
+public class TestData {
+
+}

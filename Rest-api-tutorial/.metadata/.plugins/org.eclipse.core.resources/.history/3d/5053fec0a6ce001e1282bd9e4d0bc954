@@ -1,0 +1,5 @@
+package com.springboot.tutorials.books.Entity.dtos;
+
+public class BookDto {
+
+}

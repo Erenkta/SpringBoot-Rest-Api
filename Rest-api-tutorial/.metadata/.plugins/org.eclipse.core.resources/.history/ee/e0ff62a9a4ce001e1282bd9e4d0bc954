@@ -1,0 +1,21 @@
+package com.springboot.tutorials.books.Entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder // book.author = "..." ya da book.title = "..." gibi atamalar için
+@Entity // Class'ı entity olarak SpringBoot'a tanıtıyoruz
+@Table(name = "books")
+public class Book {
+
+	private String author;
+	private String isbn;
+	private String title;
+}

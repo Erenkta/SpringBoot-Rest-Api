@@ -1,0 +1,72 @@
+package com.springboot.tutorials.books.Services;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.springboot.tutorials.books.Data.TestData;
+import com.springboot.tutorials.books.Entity.Book;
+import com.springboot.tutorials.books.Entity.dtos.BookDto;
+import com.springboot.tutorials.books.Repositories.BookRepository;
+import com.springboot.tutorials.books.Services.concretes.BookManager;
+
+@ExtendWith(MockitoExtension.class) // class'ı kullandık
+public class BookManagerTest {
+
+	@Mock // Bu sınıfı simüle etmek için kullanılan bir anotasyon
+	private BookRepository bookRepository;
+	@InjectMocks // simüle edilen class'ları buna inject et
+	private BookManager testService;
+	
+	
+	@Test
+	public void testThatBookIsSaved() {
+		
+		final BookDto dto = TestData.testBookDto();
+		
+		final Book entity = TestData.testBookEntity();
+		//Yukarıda Dummy Dto ve Entity datalar oluşturdum
+		
+		when(bookRepository.save(eq(entity))).thenReturn(entity); // sanki veritabanına bunu kaydetmişiz gibi davranıyoruz
+		
+		
+		final BookDto result = testService.create(dto); 
+		
+		assertEquals(dto,result); // bu ikisinin eşitliğine göre testimizin sonucu belirleniyor
+	}
+	
+	@Test
+	public void testThatFindByIdReturnsEmptyWhenNoBook() {
+		final String isbn = "0000000";
+		
+		when(bookRepository.findById(eq(isbn))).thenReturn(Optional.empty()); // Eğer varsa bile null return etmek için yazdık
+		final Optional<BookDto> result = testService.findById(isbn);
+		assertEquals(Optional.empty(),result); //beklenen , sonuç şeklinde yazıyoruz. doğal olarak da Optional.empty bekliyoruz
+	}
+	
+	@Test
+	public void testThatFindByIdReturnsBookWhenExists() {
+		final BookDto testBookDto = TestData.testBookDto();		
+		final Book testBook = TestData.testBookEntity();
+		
+		when(bookRepository.findById(eq(testBookDto.getIsbn()))).thenReturn(Optional.of(testBook)); //Isbn'e sahip olanı bulursan testBook'u dön dedik
+		
+		final Optional<BookDto> result = testService.findById(testBookDto.getIsbn());
+		assertEquals(Optional.of(testBookDto),result); // bize dönen sonuç test Dto'muz ile aynı mı
+	}
+	
+	@Test
+	public void testThatListBooksReturnsEmptyListWhenNoBookExists() {
+		final List<BookDto> result = testService.listBooks();
+		assertEquals(0, result.size());
+	}
+}

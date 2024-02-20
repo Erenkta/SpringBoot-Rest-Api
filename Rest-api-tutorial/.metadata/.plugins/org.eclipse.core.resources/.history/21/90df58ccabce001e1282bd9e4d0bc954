@@ -1,0 +1,8 @@
+package com.springboot.tutorials.books.Services.abstracts;
+
+import com.springboot.tutorials.books.Entity.Book;
+import com.springboot.tutorials.books.Entity.dtos.BookDto;
+
+public interface BookService {
+	Book create(BookDto book);
+}

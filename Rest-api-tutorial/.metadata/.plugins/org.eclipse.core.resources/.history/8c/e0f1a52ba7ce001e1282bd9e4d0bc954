@@ -1,0 +1,17 @@
+package com.springboot.tutorials.books.Services.concretes;
+
+import org.springframework.stereotype.Service;
+
+import com.springboot.tutorials.books.Entity.Book;
+import com.springboot.tutorials.books.Services.abstracts.BookService;
+
+@Service 
+public class BookManager implements BookService{
+
+	@Override
+	public Book create(Book book) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,9 @@
+package com.springboot.tutorials.books.Controllers;
+
+import org.springframework.stereotype.Controller;
+
+@Controller
+
+public class BookController {
+	private BookService bookService
+}

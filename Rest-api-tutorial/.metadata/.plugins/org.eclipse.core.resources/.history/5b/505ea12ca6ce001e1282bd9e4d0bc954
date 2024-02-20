@@ -1,0 +1,6 @@
+package com.springboot.tutorials.books.Services.concretes;
+
+
+public class BookService {
+
+}

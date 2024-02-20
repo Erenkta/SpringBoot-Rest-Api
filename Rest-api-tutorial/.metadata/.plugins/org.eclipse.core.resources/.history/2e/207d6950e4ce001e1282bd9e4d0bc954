@@ -1,0 +1,11 @@
+package com.springboot.tutorials.books.Services.abstracts;
+
+import java.util.Optional;
+
+import com.springboot.tutorials.books.Entity.Book;
+import com.springboot.tutorials.books.Entity.dtos.BookDto;
+
+public interface BookService {
+	BookDto create(BookDto book);
+	Optional<BookDto> findById(String isbn);
+}

@@ -1,0 +1,75 @@
+package com.springboot.tutorials.books.Services.concretes;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.springboot.tutorials.books.Entity.Book;
+import com.springboot.tutorials.books.Entity.dtos.BookDto;
+import com.springboot.tutorials.books.Repositories.BookRepository;
+import com.springboot.tutorials.books.Services.abstracts.BookService;
+
+@Service 
+public class BookManager implements BookService{
+	private final BookRepository bookRepository;
+	
+	@Autowired // bu constructor Injection bunu yapmak yerine yukarıdaki bookRepository'e de autowired yapabilirdim
+	public BookManager(final BookRepository bookRepository) { //buraya context'ten geliyor
+		this.bookRepository = bookRepository;
+	}
+
+	@Override
+	public BookDto create(final BookDto book) {
+		final Book entity = bookDtoToEntity(book); // Dto --> entity
+		final Book savedEntity = bookRepository.save(entity);
+		return bookToBookDto(savedEntity);
+		
+	}
+	
+	private Book bookDtoToEntity(BookDto dto) { //Dto --> Entity
+		return Book.builder()
+			.isbn(dto.getIsbn())
+			.author(dto.getAuthor())
+			.title(dto.getTitle())
+			.build();
+	}
+	private BookDto bookToBookDto(Book entity) { // Entity --> Dto
+		return BookDto.builder()
+			.isbn(entity.getIsbn())
+			.author(entity.getAuthor())
+			.title(entity.getTitle())
+			.build();
+	}
+
+	@Override
+	public Optional<BookDto> findById(String isbn) {
+		final Optional<Book> entityFromDb = bookRepository.findById(isbn);
+		
+		return entityFromDb.map(book-> bookToBookDto(book));
+	}
+
+	@Override
+	public List<BookDto> listBooks() {
+		final List<Book> entitiesFromDb = bookRepository.findAll();
+		return entitiesFromDb.stream()
+				.map(book-> bookToBookDto(book))
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean isBookExists(BookDto book) {
+		return bookRepository.existsById(book.getIsbn());
+		
+	}
+
+	@Override
+	public void deleteBookById(String isbn) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+}

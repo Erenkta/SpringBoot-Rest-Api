@@ -1,0 +1,68 @@
+package com.springboot.tutorials.books.Controllers;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springboot.tutorials.books.Data.TestData;
+import com.springboot.tutorials.books.Entity.dtos.BookDto;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ExtendWith(SpringExtension.class)
+public class BookControllerIT { //IT == Integration Test yani birden fazla birimi aynı anda test etmek gibi
+	
+	@Autowired
+	private MockMvc mockMvc; // bize rest api'yi test etmek için imkan veriyor
+	
+	
+	@Test
+	public void testThatBookIsCreated() throws Exception {
+		final  BookDto book = TestData.testBookDto();
+		final ObjectMapper objectMapper = new ObjectMapper();
+		final String bookJson = objectMapper.writeValueAsString(book);
+		
+		mockMvc.perform(put("/books/"+book.getIsbn())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(bookJson))	
+				.andExpect(MockMvcResultMatchers.status().isCreated())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.isbn").value(book.getIsbn()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.title").value(book.getTitle()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.author").value(book.getAuthor()));
+	}
+	
+	@Test
+	public void testThatGetBookReturns404WhenNotFound() throws Exception {
+		mockMvc.perform(get("/books/00000"))
+		.andExpect(MockMvcResultMatchers.status().isNotFound()); // dönen status 404 mü diye bakıyoruz
+	}
+	
+	@Test
+	public void testThatGetBookReturnsBookWhenExists() throws Exception {
+		final BookDto book = TestData.testBookDto(); // test verimizi oluşturdum
+		
+		final ObjectMapper objectMapper = new ObjectMapper();
+		final String bookJson = objectMapper.writeValueAsString(book); //Json verilerini string'e çevirdim
+		
+		mockMvc.perform(get("/books/"+book.getIsbn())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(bookJson))
+				.andExpect(MockMvcResultMatchers.status().isFound())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.isbn").value(book.getIsbn()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.title").value(book.getTitle()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.author").value(book.getAuthor()));
+	}
+
+}
